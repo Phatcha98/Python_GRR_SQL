@@ -303,7 +303,7 @@ class Command(CustomBaseCommand):
                         if totalgrr_stdev == 0:
                                 availability = 0  # Set to 0 if division by zero
                         else:
-                            availability = 1.41 * ptp_stdev / totalgrr_stdev
+                            availability = 1.41 * round(ptp_stdev,4) / round(totalgrr_stdev,4)
 
                         availability_rounded_down = math.floor(availability)
 

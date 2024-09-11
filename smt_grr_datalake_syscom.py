@@ -20,6 +20,24 @@ INPUT_PATH = "/home/mnt/10_17_72_74/g/SMT/GRR/Syscom"
 
 class Command(CustomBaseCommand):
     
+    def convert_to_datetime_object(self, date_time):
+        try:
+            input_datetime = datetime.strptime(date_time, '%m/%d/%Y %H:%M:%S %p')
+        except ValueError:
+            try:
+                input_datetime = datetime.strptime(date_time, '%d/%m/%Y %H:%M:%S')
+            except ValueError:
+                try:
+                    input_datetime = datetime.strptime(date_time, '%Y/%m/%d %H:%M:%S.%f')
+                except ValueError:
+                    try:
+                        input_datetime = datetime.strptime(date_time, '%Y/%m/%d %H:%M:%S')
+                    except ValueError:
+                        raise ValueError("Invalid date format")
+
+        output_date_string = input_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        return output_date_string
+    
     def backup_error(self, csv_file):
         ERROR_PATH = os.path.join(os.path.dirname(csv_file), "ERROR")
         if not os.path.exists(ERROR_PATH):
@@ -57,7 +75,7 @@ class Command(CustomBaseCommand):
                     execute_values(cur, insert_query, data_values)
                     conn.commit()
                 except Exception as ex:
-                    logger.exception(ex)
+                    self.backup_error(csv_file)
         self.backup(csv_file)
                     
     def data_rgpz_030(self, grr_filename_syscom, grr_mc_type, df_input_syscom, grr_mc_code, grr_pd_name):
@@ -65,15 +83,11 @@ class Command(CustomBaseCommand):
         update_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
         grr_sn = df_input_syscom[0][0]
         grr_dimension = df_input_syscom[18][0]
-        grr_dimension_030 = grr_dimension.replace(' ', '')[:3]
-        if grr_dimension_030 == "SUS":
+        # grr_dimension_030 = grr_dimension.replace(' ', '')[:3]
+        if grr_dimension == "HES offset":
             grr_value = round(df_input_syscom[19][0],5)
-            date_str = df_input_syscom[5][0]
-            try:
-                date_obj = datetime.strptime(date_str, '%d/%m/%Y %H:%M:%S')
-                grr_meas_time_syscom = date_obj.strftime('%Y-%m-%d %H:%M:%S')
-            except ValueError as e:
-                print(f"Error parsing date string: {e}")
+            date_time = df_input_syscom[5][0]
+            grr_meas_time_syscom = self.convert_to_datetime_object(date_time)
             grr_lsl = -10
             grr_usl = 10
             df_syscom.append([grr_filename_syscom, grr_mc_type, grr_mc_code, grr_pd_name, grr_sn, grr_dimension,
@@ -93,7 +107,8 @@ class Command(CustomBaseCommand):
         grr_dimension_086 = grr_dimension.replace(' ', '')[:3]
         if grr_dimension_086 == "SUS":
             grr_value = df_input_syscom[8][0]
-            grr_meas_time_syscom = df_input_syscom[5][0]
+            date_time = df_input_syscom[5][0]
+            grr_meas_time_syscom = self.convert_to_datetime_object(date_time)
             grr_lsl = 0
             grr_usl = 5
             df_syscom.append([grr_filename_syscom, grr_mc_type, grr_mc_code, grr_pd_name, grr_sn, grr_dimension,
@@ -113,7 +128,8 @@ class Command(CustomBaseCommand):
         grr_dimension_127 = grr_dimension.replace(' ', '')[:3]
         if grr_dimension_127 == "SUS":
             grr_value = df_input_syscom[8][0]
-            grr_meas_time_syscom = df_input_syscom[5][0]
+            date_time = df_input_syscom[5][0]
+            grr_meas_time_syscom = self.convert_to_datetime_object(date_time)
             grr_lsl = 0
             grr_usl = 5
             df_syscom.append([grr_filename_syscom, grr_mc_type, grr_mc_code, grr_pd_name, grr_sn, grr_dimension,
@@ -187,9 +203,8 @@ class Command(CustomBaseCommand):
                                 grr_sn = df_input_syscom[0][0]
                                 grr_dimension = df_input_syscom[7][0]
                                 grr_value = df_input_syscom[8][0]
-                                grr_meas_time = df_input_syscom[5][0]
-                                date_obj = datetime.strptime(grr_meas_time, '%d/%m/%Y %H:%M:%S')
-                                grr_meas_time_syscom = date_obj.strftime('%Y-%m-%d %H:%M:%S')
+                                date_time = df_input_syscom[5][0]
+                                grr_meas_time_syscom = self.convert_to_datetime_object(date_time)
                                 grr_lsl = 0
                                 grr_usl = 5
                                 df_syscom.append([grr_filename_syscom, grr_mc_type, grr_mc_code, grr_pd_name, grr_sn, grr_dimension,

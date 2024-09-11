@@ -19,9 +19,20 @@ class Command(CustomBaseCommand):
             with conn.cursor() as cur:
                 try:
                     cur.execute("""
-                        SELECT job_id, op_id, mc_type, tester_code, grr_sn, dimension, id, mc_code, create_date
-                        FROM smt_grr_job_record
-                        WHERE is_check = False
+                        SELECT 
+                            job_id, 
+                            REPLACE(TRIM(op_id), ' ', '') AS op_id, 
+                            REPLACE(TRIM(mc_type), ' ', '') AS mc_type, 
+                            REPLACE(TRIM(tester_code), ' ', '') AS tester_code, 
+                            REPLACE(TRIM(grr_sn), ' ', '') AS grr_sn, 
+                            REPLACE(TRIM(dimension), ' ', '') AS dimension, 
+                            id, 
+                            REPLACE(TRIM(mc_code), ' ', '') AS mc_code, 
+                            create_date
+                        FROM 
+                            smt_grr_job_record
+                        WHERE 
+                            is_check = False;
                     """)
                     job_record_list = cur.fetchall()
                     

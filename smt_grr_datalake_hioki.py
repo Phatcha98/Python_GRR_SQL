@@ -218,6 +218,6 @@ class Command(CustomBaseCommand):
         pass
 
     def handle(self, *args, **options):
-        self.run()
+        # self.run()
         schedule.every(1).minutes.do(self.jobqueue.put, self.run)
         self.run_schedule(schedule)

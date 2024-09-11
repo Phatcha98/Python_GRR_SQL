@@ -21,7 +21,7 @@ class Command(CustomBaseCommand):
     def fomula_contribution_tv(self, input_1, inpui_2):
         try:
             result = (input_1 / inpui_2)
-            return result
+            return round(result, 9)
         except:
             return 0
     
@@ -171,13 +171,13 @@ class Command(CustomBaseCommand):
                             df2.drop_duplicates(subset=['mc_type','mc_code','op_id'], inplace=True)
 
                             nkr = (sum(df2['total_horizontal']) ** 2) / (df1['appraisers'] * df1['trials'] * df1['samples'])
-                            nkr = nkr.iloc[0]
+                            nkr = round(nkr.iloc[0], 7)
                             nr = sum(df2['total_horizontal'] ** 2) / df1['trials'] / df1['samples']
-                            nr = nr.iloc[0]
+                            nr = round(nr.iloc[0], 7)
                             kr = df2['sum_total_vertical'] / df1['appraisers'] / df1['trials']
-                            kr = kr.iloc[0]
+                            kr = round(kr.iloc[0], 7)
                             r = df2['sum_r'] / df1['trials']
-                            r = r.iloc[0]
+                            r = round(r.iloc[0], 7)
 
                             type = ['ANOVA Table With Operator*Part Interaction','ANOVA Table With Operator*Part Interaction', 'ANOVA Table With Operator*Part Interaction',
                             'ANOVA Table With Operator*Part Interaction','ANOVA Table With Operator*Part Interaction','ANOVA Table Without Operator*Part Interaction',
@@ -323,13 +323,24 @@ class Command(CustomBaseCommand):
 
                             grr_var_wi_repeatability = wi_ms_repeatability
                             grr_var_wi_operator = (wi_ms_ooperators-wi_ms_operators_part) / (df1['samples'].iloc[0] * df1['trials'].iloc[0]) 
+                            if grr_var_wi_operator < 0:
+                                    grr_var_wi_operator = 0
+                            else:
+                                grr_var_wi_operator = grr_var_wi_operator
+
                             grr_var_wi_operators_part = (wi_ms_operators_part - wi_ms_repeatability)/df1['trials'].iloc[0]
                             grr_var_wi_part_to_part = (wi_ms_part - wi_ms_operators_part) / (df1['appraisers'].iloc[0] * df1['trials'].iloc[0])
                             grr_var_wi_reproducibility = (grr_var_wi_operator + grr_var_wi_operators_part)
                             grr_var_wi_total = (grr_var_wi_repeatability + grr_var_wi_reproducibility)
                             grr_var_wi_total_variation = (grr_var_wi_total + grr_var_wi_part_to_part)
                             grr_var_wio_repeatability = (wio_ss_repeatability/ wio_df_repeatability)
+
                             grr_var_wio_operator = (wio_ms_operators - wio_ms_repeatability) / (df1['samples'].iloc[0] * df1['trials'].iloc[0]) 
+                            if grr_var_wio_operator < 0:
+                                grr_var_wio_operator = 0
+                            else:
+                                grr_var_wio_operator = grr_var_wio_operator
+
                             grr_var_wio_operators_part = " "
                             grr_var_wio_part_to_part = (wio_ms_part - wio_ms_repeatability) /(df1['appraisers'].iloc[0] * df1['trials'].iloc[0])
                             grr_var_wio_reproducibility = grr_var_wio_operator

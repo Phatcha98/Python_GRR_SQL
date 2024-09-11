@@ -1,0 +1,25 @@
+--------------- env----------------------   
+1) python -m venv env
+2) .\env\Scripts\activate
+
+
+--------------- django -------------------
+pip install django
+
+
+---------- requirements.txt --------------
+1) pip freeze > requirements.txt   #save requirements
+2) pip install -r requirements.txt  #install requirements
+
+
+
+1) python manage.py runserver
+
+
+take the test because the test form expires on August 25th.
+
+
+
+curl -X POST http://127.0.0.1:8000/api/v1/student/ \
+-H "Authorization: Token 6132d4a6dce7b124a5551ffda2c254e872790148" \
+-H "Content-Type: application/json"
