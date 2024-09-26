@@ -29,6 +29,7 @@ class Command(CustomBaseCommand):
         shutil.move(csv_file, ERROR_PATH)  
 
     def db_smt_grr_datalake(self, df):
+        df.loc[df['grr_pd_name'].isin(['RGPZ-299NL', 'RGPZ-300NL', 'RGPZ-299ML']), ['grr_lsl', 'grr_usl']] = [0, 100]
         db = connections["10.17.66.121.iot.smt"].settings_dict
         with psycopg2.connect(user=db["USER"], password=db["PASSWORD"], host=db["HOST"], port=db["PORT"], dbname=db["NAME"], options=db["OPTIONS"]["options"]) as conn:
             with conn.cursor() as cur:
@@ -43,31 +44,12 @@ class Command(CustomBaseCommand):
                             grr_usl = EXCLUDED.grr_usl, 
                             update_date = EXCLUDED.update_date
                     """
-
                     df = df.drop_duplicates(subset=['grr_filename', 'grr_mc_type', 'grr_mc_code', 'grr_pd_name', 'grr_sn', 'grr_dimension', 'grr_meas_time'])
-                    
-                    # Convert DataFrame to list of tuples
                     data_values = [tuple(row) for row in df.to_numpy()]
-                    
-                    # Use execute_values for efficient bulk insert
                     execute_values(cur, insert_query, data_values)
-                    
-                    # Commit the transaction
                     conn.commit()
                 except Exception as ex:
                     logger.exception(ex)
-
-    # def check_csv_row(self, csv_file_path):
-    #     with open(csv_file_path, 'r') as file:
-    #         csv_reader = csv.reader(file)
-    #         row_count = sum(1 for row in csv_reader)  # Counting the rows
-    #         return row_count
-        
-    # def convert_to_float(value):
-    #     try:
-    #         return float(value.strip())
-    #     except AttributeError:
-    #         return value
 
     @logger.catch
     def run(self):
@@ -97,43 +79,8 @@ class Command(CustomBaseCommand):
                             columns = [desc[0] for desc in cur.description]
                             df = pd.DataFrame(master, columns=columns)
 
-                    # row_count = self.check_csv_row(csv_file)  
-                    # df_fct = []
                     df_hioko = []
                     update_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                        
-                    # elif row_count == 6:
-                        
-                    #     grr_filename_fct = os.path.basename(csv_file)
-                    #     df_input_fct_1 = pd.read_csv(csv_file, header=None, nrows=1)
-                    #     df_input_fct_2 = pd.read_csv(csv_file, header=None, skiprows= 1)
-                    #     grr_mc_code_fct = grr_filename_fct.split("+")[2]
-                    #     grr_pd_name_fct = grr_filename_fct.split("+")[0]
-                    #     if grr_pd_name_fct in df['prd'].values:
-                    #         grr_mc_type_fct = df.loc[df['prd'] == grr_pd_name_fct, 'type'].values[0]
-
-                    #     grr_sn_fct = df_input_fct_1[0][0]
-                    #     grr_meas_time_fct = df_input_fct_1[5][0]
-                    #     grr_dimension_fct = df_input_fct_2.iloc[0, [16, 17, 18, 19, 27, 28]].T
-                    #     grr_value_fct = df_input_fct_2.iloc[4, [16, 17, 18, 19, 27, 28]].T
-                    #     grr_lsl_fct = df_input_fct_2.iloc[2, [16, 17, 18, 19, 27, 28]].T
-                    #     grr_usl_fct = df_input_fct_2.iloc[1, [16, 17, 18, 19, 27, 28]].T
-                    #     df_fct = pd.DataFrame({ 
-                    #         'grr_filename': grr_filename_fct, 
-                    #         'grr_mc_type': grr_mc_type_fct, 
-                    #         'grr_mc_code': grr_mc_code_fct, 
-                    #         'grr_pd_name': grr_pd_name_fct, 
-                    #         'grr_sn': grr_sn_fct, 
-                    #         'grr_dimension': grr_dimension_fct, 
-                    #         'grr_value': grr_value_fct, 
-                    #         'grr_meas_time': grr_meas_time_fct, 
-                    #         'grr_lsl': grr_lsl_fct, 
-                    #         'grr_usl': grr_usl_fct,
-                    #         'update_date': update_date
-                    #     })
-                    #     df = df_fct
-                    #     self.db_smt_grr_datalake(df)
-                        
                     # else:
                     grr_filename_hioki = os.path.basename(csv_file)
                     df_input_hioko_1 = pd.read_csv(csv_file, header=None, nrows=1)

@@ -55,8 +55,14 @@ class Command(CustomBaseCommand):
                             op_id_split = [x for x in job_record[1].split('+')[:3] for _ in range(3)]
                             op_id_list = [(x, y) for x, y in zip(list(range(1, 4))*3, op_id_split)]
                             for op_id, grr_data in zip(op_id_list, grr_data_list[:9]):
-                                output_data_list.append((grr_data[0], job_record[3], grr_data[2], op_id[1], grr_data[3], op_id[0],grr_data[4], grr_data[5], grr_data[6], grr_data[7], job_record[0], grr_data[8], ))
-                            
+                                    formatted_value = round(grr_data[4], 4)
+                                    output_data_list.append((
+                                        grr_data[0], job_record[3], grr_data[2], op_id[1], 
+                                        grr_data[3], op_id[0], formatted_value, 
+                                        grr_data[5], grr_data[6], grr_data[7], 
+                                        job_record[0], grr_data[8]
+                                    ))
+                                                            
                             # insert data to smt_grr_job_datalake
                             insert_query = """
                                 INSERT INTO smt_grr_job_datalake

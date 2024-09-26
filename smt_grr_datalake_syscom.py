@@ -55,6 +55,8 @@ class Command(CustomBaseCommand):
         shutil.move(csv_file, BACKUP_PATH)
 
     def db_smt_grr_datalake(self, df, csv_file):
+        df.loc[df['grr_pd_name'].isin(['RGPZ-299NL', 'RGPZ-300NL', 'RGPZ-299ML']), ['grr_lsl', 'grr_usl']] = [0, 100]
+        df.loc[df['grr_pd_name'].isin(['RGPZ-244NL']), ['grr_lsl', 'grr_usl']] = [0, 10]
         db = connections["10.17.66.121.iot.smt"].settings_dict
         with psycopg2.connect(user=db["USER"], password=db["PASSWORD"], host=db["HOST"], port=db["PORT"], dbname=db["NAME"], options=db["OPTIONS"]["options"]) as conn:
             with conn.cursor() as cur:
@@ -69,7 +71,6 @@ class Command(CustomBaseCommand):
                             grr_usl = EXCLUDED.grr_usl, 
                             update_date = EXCLUDED.update_date
                     """
-
                     df = df.drop_duplicates(subset=['grr_filename', 'grr_mc_type', 'grr_mc_code', 'grr_pd_name', 'grr_sn', 'grr_dimension', 'grr_meas_time'])
                     data_values = [tuple(row) for row in df.to_numpy()]
                     execute_values(cur, insert_query, data_values)
@@ -218,12 +219,6 @@ class Command(CustomBaseCommand):
                                     self.backup_error(csv_file)
                                 else:
                                     self.db_smt_grr_datalake(df, csv_file)
-                                    # BACKUP_PATH = os.path.join(INPUT_PATH, "BACKUP")
-                                    # if not os.path.exists(BACKUP_PATH):
-                                    #     os.makedirs(BACKUP_PATH)
-                                    # if os.path.exists(os.path.join(BACKUP_PATH, os.path.basename(csv_file))):
-                                    #     os.remove(os.path.join(BACKUP_PATH, os.path.basename(csv_file)))
-                                    # shutil.move(csv_file, BACKUP_PATH)
                     except Exception as ex:
                         logger.exception(ex)
                         self.backup_error(csv_file)
